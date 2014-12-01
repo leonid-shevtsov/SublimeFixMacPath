@@ -1,7 +1,7 @@
 from __future__ import division, absolute_import, print_function, unicode_literals
 import sublime, sublime_plugin
 import re, platform
-from os import environ
+from os import environ, path
 from subprocess import Popen, PIPE
 
 
@@ -17,7 +17,12 @@ if isMac():
 	originalEnv = {}
 
 	def getSysPath():
-		command = "TERM=ansi CLICOLOR=\"\" SUBLIME=1 /usr/bin/login -fqpl $USER $SHELL -l -c 'TERM=ansi CLICOLOR=\"\" SUBLIME=1 printf \"%s\" \"$PATH\"'"
+		if path.basename(originalEnv['SHELL']) == 'fish':
+			pathPrintCommand = "for dir in $PATH; echo -n $dir; echo -n :; end"
+		else:
+			pathPrintCommand = "TERM=ansi CLICOLOR=\"\" SUBLIME=1 printf \"%s\" \"$PATH\""
+
+		command = "TERM=ansi CLICOLOR=\"\" SUBLIME=1 /usr/bin/login -fqpl $USER $SHELL -l -c '" + pathPrintCommand + "'"
 
 		# Execute command with original environ. Otherwise, our changes to the PATH propogate down to
 		# the shell we spawn, which re-adds the system path & returns it, leading to duplicate values.
